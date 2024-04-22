@@ -1,0 +1,21 @@
+#!/bin/bash
+br=$1
+eth=$2
+dev=$3
+ip=$4
+mask=$5
+mtu=$6
+cd /usr/bin/
+
+brctl addbr $br
+# set forwarding delay to 0
+brctl setfd $br 0
+brctl addif $br $eth
+#
+brctl addif $br $dev
+
+# need to configure the bridge with the vpn server ip address
+ifconfig $br $ip netmask $mask
+
+ip link set $eth up promisc on mtu $mtu
+ip link set $dev up promisc on mtu $mtu

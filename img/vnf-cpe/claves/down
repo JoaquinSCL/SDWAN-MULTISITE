@@ -1,0 +1,6 @@
+#!/bin/bash
+br=$1
+eth=$2
+cd /usr/bin/
+ip link set $br down
+brctl delbr $br
