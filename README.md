@@ -2,49 +2,18 @@
 
 ### Escenario básico con Helm
 
-En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectarlos mediante OpenVPN:
+En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conectarlos mediante OpenVPN:
 
-- Desplegar los dos pods usando helm. Se debe ejecutar dos veces en la carpeta "/sd-edge/helm" ya que cada vez se instancia un solo pod:
+**Pasos previos para configurar las redes internas:**
 
-	`cd helm`
-
-	`helm install prueba cpechart/ --values cpechart/values.yaml`
-
-- Para comprobar que todo se ha desplegado correctamente:
-
-	`Kubectl get all`
-	`kubectl get pods -o wide`
-
-- Para conectar los pods con la red privada virtual se debe acceder a la shell de los contenedores con:
-
-	`kubectl exec <nombrepod> -- /bin/bash`
-
-	siendo <nombrepod> el nombre de los pods obtenido con el comando "kubectl get all"
-
-	y acceder a la carpeta claves:
-
-	`cd claves`
-
-- Uno de los pods va a ser el server de OpenVPN. Para ello:
-
-	`openvpn server.conf &`
-
-- En el otro pod, cambiar en el archivo "client.conf" la palabra "serverContainerIP" por la IP del pod que hemos decidido que sea el server y que se obtiene con el comando "kubectl get pods -o wide" . Después ejecutar:
-
-	`openvpn client.conf &`
-
-- Comprobar conectividad con ping/traceroute/iperf entre las IPs de los pods.
-
-
-
-- [ ]  crear los virtual switch (Extnet1 y extnet2)
+- Crear los virtual switch (Extnet1 y extnet2)
     
     ```
     sudo ovs-vsctl add-br ExtNet1
     sudo ovs-vsctl add-br ExtNet2
     ```
     
-- [ ]  conectarlo al switch con “microk8s kubectl get -network-attachment-definitions extnet1” y con extnet2
+- Conectarlo al switch con “microk8s kubectl get -network-attachment-definitions extnet1” y con extnet2
     
     ```
     	# Configure Multus extnet1
@@ -81,9 +50,12 @@ En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectar
      }'
     EOF
     ```
-    
-- [ ]  desplegar tres helms diferentes uno con extnet1(CLIENTE) otro con extnet 2(PRUEBA PING) y otro con las dos(SERVER)
-    
+**Pasos para desplegar el entorno:**
+
+-  Desplegar tres helms diferentes uno conectado a extnet1(CLIENTE) otro conectado a extnet2(PRUEBA PING) y otro conectado a las dos(SERVER)
+
+    `cd helm`
+   
     ```yaml
     helm install server cpechartS/ --values cpechartS/values.yaml
     helm install client cpechartC/ --values cpechartC/values.yaml
@@ -95,8 +67,23 @@ En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectar
     helm uninstall test
     
     ```
+
+- Para comprobar que todo se ha desplegado correctamente:
+
+	`Kubectl get all`
+	`kubectl get pods -o wide`
+
+- Para conectar los pods con la red privada virtual se debe acceder a la shell de los contenedores con:
+
+	`kubectl exec <nombrepod> -- /bin/bash`
+
+	siendo <nombrepod> el nombre de los pods obtenido con el comando "kubectl get all"
+
+	y acceder a la carpeta claves:
+
+	`cd claves`
     
-- [ ]  Darle IPs a  extnet1 y extnet2
+- Darle IPs a  extnet1 y extnet2
     
     ```yaml
     ifconfig net1 10.100.1.1/24 #server a extnet1
@@ -104,7 +91,7 @@ En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectar
     ifconfig net1 10.100.2.2/24 #prueba a extnet2
     ```
     
-- [ ]  hacer ping de client a prueba ping y usar tcpdump para ver si pasa por server el tráfico
+- Hacer ping de client a prueba ping y usar tcpdump para comprobar si pasa por server el tráfico antes de desplegar la VPN
     
     ```yaml
     #en host
@@ -114,5 +101,14 @@ En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectar
     tcpdump -i [interfaz]
     ```
     
-- [ ]  Desplegar OpenVPN
-- [ ]  Hacer ping de client a prueba ping y usar tcpdump para ver si pasa por server el tráfico
+- Desplegar OpenVPN:
+  
+  	- Uno de los pods va a ser el server de OpenVPN. Para ello:
+
+	```openvpn server.conf &```
+
+	- En el otro pod, ejecutar.
+
+	```openvpn client.conf &```
+  
+- Hacer ping de client a prueba ping y usar tcpdump para ver si pasa por server el tráfico
