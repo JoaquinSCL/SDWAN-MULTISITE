@@ -95,7 +95,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     
     ```yaml
     #en host
-    "sudo ovs-ofctl show ExtNet1" y "sudo ovs-ofctl show ExtNet2" #para ver ombre de puertos
+    "sudo ovs-ofctl show ExtNet1" y "sudo ovs-ofctl show ExtNet2" #para ver nombre de puertos
     sudo ovs-tcpdump -i [interfaz]
     #en los pods
     tcpdump -i [interfaz]
