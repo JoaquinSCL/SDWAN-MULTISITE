@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
 RUN apt-get clean
 RUN apt-get update \
@@ -19,7 +19,9 @@ RUN apt-get update \
     iproute2 \
     curl \
     nano \
-    psmisc
+    psmisc \
+    wireguard \
+    netplan.io
 
 
 COPY claves /claves
