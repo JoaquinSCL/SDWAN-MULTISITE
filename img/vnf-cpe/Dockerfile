@@ -20,8 +20,7 @@ RUN apt-get update \
     curl \
     nano \
     psmisc \
-    wireguard \
-    netplan.io
+    wireguard
 
 
 COPY claves /claves

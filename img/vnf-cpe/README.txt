@@ -1,1 +1,0 @@
-Joaquín Sánchez-Cascado Loro
