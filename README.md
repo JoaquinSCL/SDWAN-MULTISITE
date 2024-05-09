@@ -114,7 +114,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 	```openvpn client.conf &```
 
-- **Prueba conectividad:**
+	- **Prueba conectividad:**
 	- Hacer ping de client a prueba ping y viceversa:
 
  	`ping 10.100.2.2`
@@ -171,7 +171,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
   	brctl show
   	```
 	
-   - **Cliente:**
+  - **Cliente:**
 
   	**Creación túnel WireGuard (interfaz wg0)**
 	
@@ -201,7 +201,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	wg show
 	```
   
-- **Prueba conectividad:**
+	- **Prueba conectividad:**
 	- Hacer ping de client a prueba ping y viceversa:
 
  	`ping 10.100.2.2`
