@@ -2,13 +2,71 @@
 
 ### Escenario básico con Helm
 
-En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectarlos mediante OpenVPN:
+En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conectarlos mediante VPN de nivel 2. Se van a probar OpenVPN y WireGuard:
 
-- Desplegar los dos pods usando helm. Se debe ejecutar dos veces en la carpeta "/sd-edge/helm" ya que cada vez se instancia un solo pod:
+**Pasos comunes para configurar las redes internas:**
 
-	`cd helm`
+- Crear los virtual switch (Extnet1 y extnet2)
+    
+    ```
+    sudo ovs-vsctl add-br ExtNet1
+    sudo ovs-vsctl add-br ExtNet2
+    ```
+    
+- Conectarlo al switch con “microk8s kubectl get -network-attachment-definitions extnet1” y con extnet2
+    
+    ```
+    	# Configure Multus extnet1
+    microk8s kubectl get network-attachment-definitions extnet1 || \
+    cat <<EOF | microk8s kubectl create -f -
+    apiVersion: "k8s.cni.cncf.io/v1"
+    kind: NetworkAttachmentDefinition
+    metadata:
+     name: extnet1
+     annotations:
+       k8s.v1.cni.cncf.io/resourceName: ovs-cni.network.kubevirt.io/ExtNet1
+    spec:
+     config: '{
+       "cniVersion": "0.3.1",
+       "type": "ovs",
+       "bridge": "ExtNet1"
+     }'
+    EOF
+    
+    # Configure Multus extnet2
+    microk8s kubectl get network-attachment-definitions extnet2 || \
+    cat <<EOF | microk8s kubectl create -f -
+    apiVersion: "k8s.cni.cncf.io/v1"
+    kind: NetworkAttachmentDefinition
+    metadata:
+     name: extnet2
+     annotations:
+       k8s.v1.cni.cncf.io/resourceName: ovs-cni.network.kubevirt.io/ExtNet2
+    spec:
+     config: '{
+       "cniVersion": "0.3.1",
+       "type": "ovs",
+       "bridge": "ExtNet2"
+     }'
+    EOF
+    ```
+**Pasos comunes para desplegar el entorno:**
 
-	`helm install prueba cpechart/ --values cpechart/values.yaml`
+-  Desplegar tres helms diferentes uno conectado a extnet1(CLIENTE) otro conectado a extnet2(PRUEBA PING) y otro conectado a las dos(SERVER)
+
+    `cd helm`
+   
+    ```yaml
+    helm install server cpechartS/ --values cpechartS/values.yaml
+    helm install client cpechartC/ --values cpechartC/values.yaml
+    helm install test cpechartP/ --values cpechartP/values.yaml
+    
+    #para cerrar
+    helm uninstall server
+    helm uninstall client
+    helm uninstall test
+    
+    ```
 
 - Para comprobar que todo se ha desplegado correctamente:
 
@@ -24,13 +82,131 @@ En este caso se van a desplegar dos pods sobre Kubernetes usando Helm y conectar
 	y acceder a la carpeta claves:
 
 	`cd claves`
+    
+- Darle IPs a  extnet1 y extnet2
+    
+    ```yaml
+    ifconfig net1 10.100.1.1/24 #server a extnet1
+    ifconfig net1 10.100.1.2/24 #client a extnet1
+    ifconfig net1 10.100.2.2/24 #prueba a extnet2
+    ```
+    
+- Hacer ping de client a prueba ping y usar tcpdump para comprobar si pasa por server el tráfico antes de desplegar la VPN
+    
+    ```yaml
+    #en host
+    "sudo ovs-ofctl show ExtNet1" y "sudo ovs-ofctl show ExtNet2" #para ver nombre de puertos
+    sudo ovs-tcpdump -i [interfaz]
+    #en los pods
+    tcpdump -i [interfaz]
+    ```
 
-- Uno de los pods va a ser el server de OpenVPN. Para ello:
+**Despliegue VPN:** 
 
-	`openvpn server.conf &`
+- **Desplegar OpenVPN:**
+  Toda la configuración, tanto de servidor como de cliente, está definida en los archivos de configuracion "server.conf" y "client.conf" respectivamente.
+  
+  	- Uno de los pods va a ser el server de OpenVPN. Para ello:
 
-- En el otro pod, cambiar en el archivo "client.conf" la palabra "serverContainerIP" por la IP del pod que hemos decidido que sea el server y que se obtiene con el comando "kubectl get pods -o wide" . Después ejecutar:
+	```openvpn server.conf &```
 
-	`openvpn client.conf &`
+	- En el otro pod, ejecutar.
 
-- Comprobar conectividad con ping/traceroute/iperf entre las IPs de los pods.
+	```openvpn client.conf &```
+
+    - **Prueba conectividad:**
+		- Hacer ping de client a prueba ping y viceversa:
+	
+	 	`ping 10.100.2.2`
+	  	`ping 10.100.2.8`
+	  
+	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+	
+	    	`tcpdump -i tap0`
+
+- **Desplegar Wireguard:**
+
+  Wireguard solo permite crear túneles de nivel 3. Para poder convertir esta comunicación a nivel 2 podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
+
+  - **Servidor:**
+
+	**Creación túnel WireGuard (interfaz wg0)**
+
+	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+
+	ip link add wg0 type wireguard
+
+	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+
+	ip address add 10.100.169.1/24 dev wg0
+
+	ip link set dev wg0 mtu 1500
+
+	ip link set wg0 up
+
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194
+  	```
+
+	**Creación túnel de tipo Gretap**
+
+	```ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
+
+	ip link set gretun up
+	```
+
+	**Creación interfaz bridge br0 y conectar net2 y gretap**
+
+	```ip link add name br0 type bridge
+
+	ip link set dev br0 up
+	
+	ip link set dev net2 master br0
+	
+	ip link set gretun master br0
+	
+	ip addr add 10.100.2.1/24 dev br0
+	
+	wg show
+  
+  	brctl show
+  	```
+	
+  - **Cliente:**
+
+  	**Creación túnel WireGuard (interfaz wg0)**
+	
+	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	
+	ip link add wg0 type wireguard
+	
+	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+	
+	ip address add 10.100.169.2/24 dev wg0
+	
+	ip link set dev wg0 mtu 1500
+	
+	ip link set wg0 up
+	
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194
+ 	```
+	
+  	**Crear túnel de tipo Gretap**
+	
+  	```ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
+	
+  	ip link set gretun up
+	
+	ip addr add  10.100.2.8/24 dev gretun
+	
+	wg show
+	```
+  
+   - **Prueba conectividad:**
+		- Hacer ping de client a prueba ping y viceversa:
+	
+	 	`ping 10.100.2.2`
+	  	`ping 10.100.2.8`
+	  
+	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+	
+	    	`tcpdump -i wg0`
