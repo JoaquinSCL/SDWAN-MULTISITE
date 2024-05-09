@@ -114,11 +114,21 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 	```openvpn client.conf &```
 
+- **Prueba conectividad:**
+	- Hacer ping de client a prueba ping y viceversa:
+
+ 	`ping 10.100.2.2`
+  	`ping 10.100.2.8`
+  
+ 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+
+    	`tcpdump -i tap0`
+
 - **Desplegar Wireguard:**
 
   Wireguard solo permite crear túneles de nivel 3. Para poder convertir esta comunicación a nivel 2 podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
 
-  - Servidor:
+  - **Servidor:**
 
 	**Creación túnel WireGuard (interfaz wg0)**
 
@@ -156,10 +166,12 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	
 	ip addr add 10.100.2.1/24 dev br0
 	
-	wg show y brctl show
+	wg show
+  
+  	brctl show
   	```
 	
-   - Cliente
+   - **Cliente:**
 
   	**Creación túnel WireGuard (interfaz wg0)**
 	
@@ -180,19 +192,21 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	
   	**Crear túnel de tipo Gretap**
 	
-  	```ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc`
+  	```ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
 	
   	ip link set gretun up
 	
 	ip addr add  10.100.2.8/24 dev gretun
 	
-	ping 10.100.2.2
-	
-	y en test ping 10.100.2.8
-	
 	wg show
 	```
-
-
   
-- Hacer ping de client a prueba ping y usar tcpdump para ver si pasa por server el tráfico
+- **Prueba conectividad:**
+	- Hacer ping de client a prueba ping y viceversa:
+
+ 	`ping 10.100.2.2`
+  	`ping 10.100.2.8`
+  
+ 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+
+    	`tcpdump -i wg0`
