@@ -120,9 +120,9 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
   - Servidor:
 
-	## Create WireGuard tunnel interface wg0
+	**Creación túnel WireGuard (interfaz wg0)**
 
-	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
 
 	ip link add wg0 type wireguard
 
@@ -134,33 +134,36 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 	ip link set wg0 up
 
-	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194 
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194
+  	```
 
-	## Create gretun and add gretun to bridge br0
+	**Creación túnel de tipo Gretap**
 
-	`ip link add gretun type gretap local **10.100.169.1** remote **10.100.169.2** ignore-df nopmtudisc`
+	```ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
 
-	`ip link set gretun up`
+	ip link set gretun up
+	```
 
-	## Create bridge interface br0 and add net2 to bridge br0
+	**Creación interfaz bridge br0 y conectar net2 y gretap**
 
-	ip link add name br0 type bridge
+	```ip link add name br0 type bridge
 
 	ip link set dev br0 up
 	
 	ip link set dev net2 master br0
 	
-	`ip link set gretun master br0`
+	ip link set gretun master br0
 	
 	ip addr add 10.100.2.1/24 dev br0
 	
 	wg show y brctl show
+  	```
 	
    - Cliente
 
-	## Create WireGuard tunnel interface wg0
+  	**Creación túnel WireGuard (interfaz wg0)**
 	
-	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
 	
 	ip link add wg0 type wireguard
 	
@@ -172,13 +175,14 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	
 	ip link set wg0 up
 	
-	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194 
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194
+ 	```
 	
-	## Create gretun
+  	**Crear túnel de tipo Gretap**
 	
-	`ip link add gretun type gretap local **10.100.169.2** remote **10.100.169.1** ignore-df nopmtudisc`
+  	```ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc`
 	
-	`ip link set gretun up`
+  	ip link set gretun up
 	
 	ip addr add  10.100.2.8/24 dev gretun
 	
@@ -187,6 +191,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	y en test ping 10.100.2.8
 	
 	wg show
+	```
 
 
   
