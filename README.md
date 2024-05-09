@@ -115,14 +115,14 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	```openvpn client.conf &```
 
     - **Prueba conectividad:**
-	- Hacer ping de client a prueba ping y viceversa:
-
- 	`ping 10.100.2.2`
-  	`ping 10.100.2.8`
-  
- 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
-
-    	`tcpdump -i tap0`
+		- Hacer ping de client a prueba ping y viceversa:
+	
+	 	`ping 10.100.2.2`
+	  	`ping 10.100.2.8`
+	  
+	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+	
+	    	`tcpdump -i tap0`
 
 - **Desplegar Wireguard:**
 
@@ -202,11 +202,11 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	```
   
    - **Prueba conectividad:**
-	- Hacer ping de client a prueba ping y viceversa:
-
- 	`ping 10.100.2.2`
-  	`ping 10.100.2.8`
-  
- 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
-
-    	`tcpdump -i wg0`
+		- Hacer ping de client a prueba ping y viceversa:
+	
+	 	`ping 10.100.2.2`
+	  	`ping 10.100.2.8`
+	  
+	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
+	
+	    	`tcpdump -i wg0`
