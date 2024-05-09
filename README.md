@@ -2,9 +2,9 @@
 
 ### Escenario básico con Helm
 
-En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conectarlos mediante OpenVPN:
+En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conectarlos mediante VPN de nivel 2. Se van a probar OpenVPN y WireGuard:
 
-**Pasos previos para configurar las redes internas:**
+**Pasos comunes para configurar las redes internas:**
 
 - Crear los virtual switch (Extnet1 y extnet2)
     
@@ -50,7 +50,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
      }'
     EOF
     ```
-**Pasos para desplegar el entorno:**
+**Pasos comunes para desplegar el entorno:**
 
 -  Desplegar tres helms diferentes uno conectado a extnet1(CLIENTE) otro conectado a extnet2(PRUEBA PING) y otro conectado a las dos(SERVER)
 
@@ -100,8 +100,11 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     #en los pods
     tcpdump -i [interfaz]
     ```
-    
-- Desplegar OpenVPN:
+
+**Despliegue VPN:** 
+
+- **Desplegar OpenVPN:**
+  Toda la configuración, tanto de servidor como de cliente, está definida en los archivos de configuracion "server.conf" y "client.conf" respectivamente.
   
   	- Uno de los pods va a ser el server de OpenVPN. Para ello:
 
@@ -110,5 +113,81 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	- En el otro pod, ejecutar.
 
 	```openvpn client.conf &```
+
+- **Desplegar Wireguard:**
+
+  Wireguard solo permite crear túneles de nivel 3. Para poder convertir esta comunicación a nivel 2 podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
+
+  - Servidor:
+
+	## Create WireGuard tunnel interface wg0
+
+	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+
+	ip link add wg0 type wireguard
+
+	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+
+	ip address add 10.100.169.1/24 dev wg0
+
+	ip link set dev wg0 mtu 1500
+
+	ip link set wg0 up
+
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194 
+
+	## Create gretun and add gretun to bridge br0
+
+	`ip link add gretun type gretap local **10.100.169.1** remote **10.100.169.2** ignore-df nopmtudisc`
+
+	`ip link set gretun up`
+
+	## Create bridge interface br0 and add net2 to bridge br0
+
+	ip link add name br0 type bridge
+
+	ip link set dev br0 up
+	
+	ip link set dev net2 master br0
+	
+	`ip link set gretun master br0`
+	
+	ip addr add 10.100.2.1/24 dev br0
+	
+	wg show y brctl show
+	
+   - Cliente
+
+	## Create WireGuard tunnel interface wg0
+	
+	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	
+	ip link add wg0 type wireguard
+	
+	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+	
+	ip address add 10.100.169.2/24 dev wg0
+	
+	ip link set dev wg0 mtu 1500
+	
+	ip link set wg0 up
+	
+	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194 
+	
+	## Create gretun
+	
+	`ip link add gretun type gretap local **10.100.169.2** remote **10.100.169.1** ignore-df nopmtudisc`
+	
+	`ip link set gretun up`
+	
+	ip addr add  10.100.2.8/24 dev gretun
+	
+	ping 10.100.2.2
+	
+	y en test ping 10.100.2.8
+	
+	wg show
+
+
   
 - Hacer ping de client a prueba ping y usar tcpdump para ver si pasa por server el tráfico
