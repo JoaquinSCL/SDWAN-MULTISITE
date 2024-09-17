@@ -90,6 +90,13 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     ifconfig net1 10.100.1.2/24 #client a extnet1
     ifconfig net1 10.100.2.2/24 #prueba a extnet2
     ```
+
+- Si se quiere tener conectividad completa sin usar VPN, ejecutar el script "up" en el servidor, dentro de la carpeta /claves. Este script crea un brige y una interfaz (net2) en dicho bridge que conecta extnet2 a la interfaz net1 (y por tanto a extnet1). No ejecutar (o eliminar bridge) si posteriormente se quiere usar una de las soluciones VPN.
+    
+    ```yaml
+    cd claves
+    ./up br0 net2 net1 10.100.2.1 255.255.255.0 1200
+    ```
     
 - Hacer ping de client a prueba ping y usar tcpdump para comprobar si pasa por server el tráfico antes de desplegar la VPN
     
