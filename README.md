@@ -98,7 +98,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     ./up br0 net2 net1 10.100.2.1 255.255.255.0 1200
     ```
     
-- Hacer ping de client a prueba ping y usar tcpdump para comprobar si pasa por server el tráfico antes de desplegar la VPN
+- Si se ha ejecutado el script "up", hacer ping de client a prueba ping y usar tcpdump para comprobar si pasa por server el tráfico antes de desplegar la VPN
     
     ```yaml
     #en host
@@ -130,6 +130,14 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
 	
 	    	`tcpdump -i tap0`
+
+		-Opcionalmente:
+
+  		```yaml
+		  #en host
+		  "sudo ovs-ofctl show ExtNet1" y "sudo ovs-ofctl show ExtNet2" #para ver nombre de puertos
+		  sudo ovs-tcpdump -i [interfaz]
+		```
 
 - **Desplegar Wireguard:**
 
