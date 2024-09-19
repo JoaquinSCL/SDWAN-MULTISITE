@@ -147,7 +147,8 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 	**Creación túnel WireGuard (interfaz wg0)**
 
-	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	```
+	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
 
 	ip link add wg0 type wireguard
 
@@ -164,14 +165,16 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 	**Creación túnel de tipo Gretap**
 
-	```ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
+	```
+  	ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
 
 	ip link set gretun up
 	```
 
 	**Creación interfaz bridge br0 y conectar net2 y gretap**
 
-	```ip link add name br0 type bridge
+	```
+  	ip link add name br0 type bridge
 
 	ip link set dev br0 up
 	
@@ -180,8 +183,6 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	ip link set gretun master br0
 	
 	ip addr add 10.100.2.1/24 dev br0
-	
-	wg show
   
   	brctl show
   	```
@@ -190,7 +191,8 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
   	**Creación túnel WireGuard (interfaz wg0)**
 	
-	```wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	```
+  	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
 	
 	ip link add wg0 type wireguard
 	
@@ -207,17 +209,23 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	
   	**Crear túnel de tipo Gretap**
 	
-  	```ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
+  	```
+   	ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
 	
   	ip link set gretun up
 	
 	ip addr add  10.100.2.8/24 dev gretun
-	
-	wg show
 	```
   
    - **Prueba conectividad:**
-		- Hacer ping de client a prueba ping y viceversa:
+		
+		- Comprobar interfaces wireguard
+ 		
+   		```
+		wg show  #en server y cliente
+		```
+     
+  		- Hacer ping de client a prueba ping y viceversa:
 	
 	 	`ping 10.100.2.2`
 	  	`ping 10.100.2.8`
