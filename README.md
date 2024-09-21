@@ -141,7 +141,11 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 - **Desplegar Wireguard:**
 
-  Wireguard solo permite crear túneles de nivel 3. Para poder convertir esta comunicación a nivel 2 podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
+  Wireguard solo permite crear túneles de nivel 3. Para poder convertir esta comunicación a nivel 2 tenemos varias opciones
+
+ - **Interfaz gretap conectado mediante un bridge a la interfaz de wireguard (wg0)**
+
+   Podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
 
   - **Servidor:**
 
@@ -216,6 +220,39 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	
 	ip addr add  10.100.2.8/24 dev gretun
 	```
+   
+   - **VXLAN sobre tunel wireguard**
+        
+        En cada lado, crear interfaz VXLAN que encapsulara en paquetes de nivel dos la informacion transmitida.
+        
+        **En Server:**
+        
+        ```
+        ip link add vxlan0 type vxlan id 1000 local 10.100.169.1 remote 10.100.169.2 dev wg0 dstport 4789
+        ip link set vxlan0 up
+        
+        ```
+        
+        **En Cliente:**
+        
+        ```
+        ip link add vxlan0 type vxlan id 1000 local 10.100.169.2 remote 10.100.169.1 dev wg0 dstport 4789
+        ip link set vxlan0 up
+        ip addr add 10.100.2.8/24 dev vxlan0
+        
+        ```
+        
+    2. **Creación interfaz bridge br0 y conectar net2 y vxlan0**
+        
+        **En Server:**
+
+	```
+ 	ip link add name br0 type bridge
+	ip link set dev br0 up
+	ip link set dev net2 master br0
+	ip link set vxlan0 master br0
+	ip addr add 10.100.2.1/24 dev br0
+ 	```
   
    - **Prueba conectividad:**
 		
