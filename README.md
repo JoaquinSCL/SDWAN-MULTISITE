@@ -147,112 +147,112 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
    Podemos utilizar un tunel de tipo Gretap sobre el túnel de Wireguard. A continuación se exponen los pasos para hacerlo.
 
-  		- **Servidor:**
+  	**Servidor:**
 
-	**Creación túnel WireGuard (interfaz wg0)**
+		**Creación túnel WireGuard (interfaz wg0)**
+	
+		```
+		wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+	
+		ip link add wg0 type wireguard
+	
+		wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+	
+		ip address add 10.100.169.1/24 dev wg0
+	
+		ip link set dev wg0 mtu 1500
+	
+		ip link set wg0 up
+	
+		wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194
+	  	```
+	
+		**Creación túnel de tipo Gretap**
+	
+		```
+	  	ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
+	
+		ip link set gretun up
+		```
+	
+		**Creación interfaz bridge br0 y conectar net2 y gretap**
+	
+		```
+	  	ip link add name br0 type bridge
+	
+		ip link set dev br0 up
+		
+		ip link set dev net2 master br0
+		
+		ip link set gretun master br0
+		
+		ip addr add 10.100.2.1/24 dev br0
+	  
+	  	brctl show
+	  	```
+		
+  	**Cliente:**
 
-	```
-	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
-
-	ip link add wg0 type wireguard
-
-	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
-
-	ip address add 10.100.169.1/24 dev wg0
-
-	ip link set dev wg0 mtu 1500
-
-	ip link set wg0 up
-
-	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194
-  	```
-
-	**Creación túnel de tipo Gretap**
-
-	```
-  	ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
-
-	ip link set gretun up
-	```
-
-	**Creación interfaz bridge br0 y conectar net2 y gretap**
-
-	```
-  	ip link add name br0 type bridge
-
-	ip link set dev br0 up
-	
-	ip link set dev net2 master br0
-	
-	ip link set gretun master br0
-	
-	ip addr add 10.100.2.1/24 dev br0
-  
-  	brctl show
-  	```
-	
-  		- **Cliente:**
-
-  	**Creación túnel WireGuard (interfaz wg0)**
-	
-	```
-  	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
-	
-	ip link add wg0 type wireguard
-	
-	wg set wg0 listen-port 1194 private-key ./wgkeyprivs
-	
-	ip address add 10.100.169.2/24 dev wg0
-	
-	ip link set dev wg0 mtu 1500
-	
-	ip link set wg0 up
-	
-	wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194
- 	```
-	
-  	**Crear túnel de tipo Gretap**
-	
-  	```
-   	ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
-	
-  	ip link set gretun up
-	
-	ip addr add  10.100.2.8/24 dev gretun
-	```
+	  	**Creación túnel WireGuard (interfaz wg0)**
+		
+		```
+	  	wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+		
+		ip link add wg0 type wireguard
+		
+		wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+		
+		ip address add 10.100.169.2/24 dev wg0
+		
+		ip link set dev wg0 mtu 1500
+		
+		ip link set wg0 up
+		
+		wg set wg0 peer clavePubOtroPeer allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194
+	 	```
+		
+	  	**Crear túnel de tipo Gretap**
+		
+	  	```
+	   	ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
+		
+	  	ip link set gretun up
+		
+		ip addr add  10.100.2.8/24 dev gretun
+		```
    
-   	- **VXLAN sobre tunel wireguard**
+  	- **VXLAN sobre tunel wireguard**
         
-        En cada lado, crear interfaz VXLAN que encapsulara en paquetes de nivel dos la informacion transmitida.
-        
-        **En Server:**
-        
-        ```
-        ip link add vxlan0 type vxlan id 1000 local 10.100.169.1 remote 10.100.169.2 dev wg0 dstport 4789
-        ip link set vxlan0 up
-        
-        ```
-        
-        **En Cliente:**
-        
-        ```
-        ip link add vxlan0 type vxlan id 1000 local 10.100.169.2 remote 10.100.169.1 dev wg0 dstport 4789
-        ip link set vxlan0 up
-        ip addr add 10.100.2.8/24 dev vxlan0
-        
-        ```
-        
-     **Creación interfaz bridge br0 y conectar net2 y vxlan0**
-        
-        **En Server:**
-
-	```
- 	ip link add name br0 type bridge
-	ip link set dev br0 up
-	ip link set dev net2 master br0
-	ip link set vxlan0 master br0
-	ip addr add 10.100.2.1/24 dev br0
- 	```
+	        En cada lado, crear interfaz VXLAN que encapsulara en paquetes de nivel dos la informacion transmitida.
+	        
+	        **En Server:**
+	        
+	        ```
+	        ip link add vxlan0 type vxlan id 1000 local 10.100.169.1 remote 10.100.169.2 dev wg0 dstport 4789
+	        ip link set vxlan0 up
+	        
+	        ```
+	        
+	        **En Cliente:**
+	        
+	        ```
+	        ip link add vxlan0 type vxlan id 1000 local 10.100.169.2 remote 10.100.169.1 dev wg0 dstport 4789
+	        ip link set vxlan0 up
+	        ip addr add 10.100.2.8/24 dev vxlan0
+	        
+	        ```
+	        
+	     **Creación interfaz bridge br0 y conectar net2 y vxlan0**
+	        
+	        **En Server:**
+	
+		```
+	 	ip link add name br0 type bridge
+		ip link set dev br0 up
+		ip link set dev net2 master br0
+		ip link set vxlan0 master br0
+		ip addr add 10.100.2.1/24 dev br0
+	 	```
   
    - **Prueba conectividad:**
 		
