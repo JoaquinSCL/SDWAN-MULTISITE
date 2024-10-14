@@ -15,7 +15,7 @@ nsd:
   nsd:
   - id: sdedge
     name: sdedge
-    designer: Joaquin Sanchez y David Plaza
+    designer: Joaquin Sanchez
     description: SD-WAN Service
     version: '1.0'
     df:
@@ -42,13 +42,13 @@ nsd:
                 constituent-cpd-id: mgmt-ext
             virtual-link-profile-id: mgmtnet
         vnfd-id: wanknf
-      - id: ctrl
-        virtual-link-connectivity:
-          - constituent-cpd-id:
-              - constituent-base-element-id: ctrl
-                constituent-cpd-id: mgmt-ext
-            virtual-link-profile-id: mgmtnet
-        vnfd-id: ctrlknf
+#       - id: ctrl
+#         virtual-link-connectivity:
+#           - constituent-cpd-id:
+#               - constituent-base-element-id: ctrl
+#                 constituent-cpd-id: mgmt-ext
+#             virtual-link-profile-id: mgmtnet
+#         vnfd-id: ctrlknf
     version: '1.0'    
     virtual-link-desc:
       - id: mgmtnet
@@ -57,5 +57,5 @@ nsd:
       - accessknf
       - cpeknf
       - wanknf
-      - ctrlknf
+    #  - ctrlknf
      
