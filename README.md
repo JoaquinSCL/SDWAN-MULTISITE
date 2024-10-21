@@ -57,11 +57,13 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     `cd helm`
    
     ```yaml
+    helm install configmap cpe-public-keys --values cpe-public-keys/values.yaml
     helm install server cpechartS/ --values cpechartS/values.yaml
     helm install client cpechartC/ --values cpechartC/values.yaml
     helm install test cpechartP/ --values cpechartP/values.yaml
     
     #para cerrar
+    helm uninstall configmap
     helm uninstall server
     helm uninstall client
     helm uninstall test
