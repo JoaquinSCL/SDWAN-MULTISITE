@@ -1,50 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ejemplo.fullname" . }}
+  name: {{ include "cpechart.fullname" . }}
   labels:
-    {{- include "ejemplo.labels" . | nindent 4 }}
+    {{- include "cpechart.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "ejemplo.selectorLabels" . | nindent 6 }}
+      {{- include "cpechart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        k8s.v1.cni.cncf.io/networks: "{{ .Values.deployment.network }}"
       labels:
-        {{- include "ejemplo.selectorLabels" . | nindent 8 }}
+        {{- include "cpechart.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ejemplo.serviceAccountName" . }}
+      serviceAccountName: {{ include "cpechart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            capabilities:
+              add: ["NET_ADMIN"]
+            privileged: true
+          image: "{{ .Values.image.repository }}"
           ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+          - containerPort: {{ .Values.deployment.containerPort }}
+            protocol: {{ .Values.deployment.protocol }} 
+          command: ["sh", "-c", "tail -f /dev/null"]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

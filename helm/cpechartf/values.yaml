@@ -39,6 +39,19 @@ securityContext: {}
 service:
   type: NodePort
   port: 1194
+  protocol: TCP
+
+deployment:
+  network: extnet1,extnet2
+  containerPort: 1194
+  protocol: UDP
+
+cpe1:
+  publicKey: ""
+
+cpe2:
+  publicKey: ""
+
 
 ingress:
   enabled: false

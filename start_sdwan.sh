@@ -4,9 +4,14 @@
 # KUBECTL: kubectl command
 # OSMNS: OSM namespace in the cluster vim
 # NETNUM: used to select external networks
-# VCPE: "pod_id" or "deploy/deployment_id" of the cpd vnf
+# VCPE: "pod_id" or "deploy/deployment_id" of the cpe vnf
 # VWAN: "pod_id" or "deploy/deployment_id" of the wan vnf
 # REMOTESITE: the "public" IP of the remote site
+# VCPE_ID: either "cpe1" or "cpe2" to distinguish the deployment
+# WG0IP: the IP address of the wireguard interface in the cpe
+# WG0IPREMOTESITE: the IP address of the wireguard interface in the remote site
+# REMOTENETNUM: the NETNUM of the remote site
+
 
 set -u # to verify variables are defined
 : $KUBECTL
@@ -15,6 +20,10 @@ set -u # to verify variables are defined
 : $VCPE
 : $VWAN
 : $REMOTESITE
+: $VCPE_ID
+: $WG0IP
+: $WG0IPREMOTESITE
+: $REMOTENETNUM
 
 if [[ ! $VCPE =~ "sdedge-ns-repo-cpechart"  ]]; then
     echo ""       
@@ -25,6 +34,19 @@ fi
 if [[ ! $VWAN =~ "sdedge-ns-repo-wanchart"  ]]; then
     echo ""       
     echo "ERROR: incorrect <wan_deployment_id>: $VWAN"
+    exit 1
+fi
+
+if [ "$VCPE_ID" == "cpe1" ]; then
+    VCPE="sdedge-ns-repo-cpechart-1"
+    CONFIGMAP_LOCAL="cpe1-public-key"
+    CONFIGMAP_PEER="cpe2-public-key"
+elif [ "$VCPE_ID" == "cpe2" ]; then
+    VCPE="sdedge-ns-repo-cpechart-2"
+    CONFIGMAP_LOCAL="cpe2-public-key"
+    CONFIGMAP_PEER="cpe1-public-key"
+else
+    echo "ERROR: Unknown VCPE_ID '$VCPE_ID'. Expected 'cpe1' or 'cpe2'."
     exit 1
 fi
 
@@ -47,14 +69,44 @@ echo "IPWAN = $IPWAN"
 PORTWAN=`$KUBECTL get -n $OSMNS -o jsonpath="{.spec.ports[0].nodePort}" service $WAN_SERV`
 echo "PORTWAN = $PORTWAN"
 
-## 2. En VNF:cpe agregar un bridge y sus vxlan
+## 2. En VNF:cpe agregar instancia wireguard, bridge y sus vxlans
 echo "## 2. En VNF:cpe agregar un bridge y configurar IPs y rutas"
+
+$CPE_EXEC wg genkey | tee wgkeyprivs | wg pubkey > /etc/wireguard/publickey
+public_key=$($CPE_EXEC cat /etc/wireguard/publickey)
+$KUBECTL patch configmap $CONFIGMAP_LOCAL -n $OSMNS -p "{\"data\":{\"publicKey\":\"$public_key\"}}"
+# Esperar hasta que la clave pública del peer esté disponible
+echo "Esperando a que la clave pública del peer ($CONFIGMAP_PEER) esté disponible..."
+peer_public_key=""
+attempt=0
+max_attempts=10
+while [ -z "$peer_public_key" ] && [ $attempt -lt $max_attempts ]; do
+    peer_public_key=$($KUBECTL get configmap $CONFIGMAP_PEER -n $OSMNS -o jsonpath='{.data.publicKey}' 2>/dev/null || echo "")
+    if [ -z "$peer_public_key" ]; then
+        echo "Intento $((attempt + 1))/$max_attempts: La clave pública del peer aún no está disponible. Esperando 5 segundos..."
+        sleep 5
+        attempt=$((attempt + 1))
+    fi
+done
+
+if [ -z "$peer_public_key" ]; then
+    echo "ERROR: No se pudo obtener la clave pública del peer después de $max_attempts intentos."
+    exit 1
+fi
+
+$CPE_EXEC ip link add wg0 type wireguard
+$CPE_EXEC wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+$CPE_EXEC ip address add $WG0IP/24 dev wg0
+$CPE_EXEC ip link set dev wg0 mtu 1500
+$CPE_EXEC ip link set wg0 up
+$CPE_EXEC wg set wg0 peer $peer_public_key allowed-ips 0.0.0.0/0 endpoint $REMOTESITE:1194
+
 $CPE_EXEC ip route add $IPWAN/32 via $K8SGW
 $CPE_EXEC ovs-vsctl add-br brwan
 $CPE_EXEC ip link add cpewan type vxlan id 5 remote $IPWAN dstport 8741 dev eth0
 $CPE_EXEC ovs-vsctl add-port brwan cpewan
 $CPE_EXEC ifconfig cpewan up
-$CPE_EXEC ip link add sr1sr2 type vxlan id 12 remote $REMOTESITE dstport 8742 dev net$NETNUM
+$CPE_EXEC ip link add sr1sr2 type vxlan id 12 local $WG0IP remote $WG0IPREMOTESITE dstport 8742 dev wg0
 $CPE_EXEC ovs-vsctl add-port brwan sr1sr2
 $CPE_EXEC ifconfig sr1sr2 up
 

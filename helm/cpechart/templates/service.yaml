@@ -9,7 +9,7 @@ spec:
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
-      protocol: UDP
+      protocol: {{ .Values.service.protocol }}
       name: http
   selector:
     {{- include "cpechart.selectorLabels" . | nindent 4 }}

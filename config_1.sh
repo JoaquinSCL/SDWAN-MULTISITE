@@ -4,7 +4,7 @@ echo Parte inicial
 
 cd bin
 
-./rdsv-start-tun S
+./rdsv-start-tun S labtun5.dit.upm.es
 
 echo "Empieza el sleep"
 sleep 5

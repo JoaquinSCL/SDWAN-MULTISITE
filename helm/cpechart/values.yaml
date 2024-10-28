@@ -1,14 +1,14 @@
-# Default values for ejemplo.
+# Default values for cpechart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: joaquinscl/vnf-cpe
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -38,9 +38,25 @@ securityContext: {}
 
 service:
   type: NodePort
-  targetPort: 80
-  exposePort: 30001
-  internalPort: 3001
+  port: 1194
+  protocol: TCP
+
+deployment:
+  network: extnet1,extnet2
+  containerPort: 1194
+  protocol: UDP
+
+# ConfigMaps for public keys
+configMaps:
+  cpe1PublicKey: cpe1-public-key
+  cpe2PublicKey: cpe2-public-key
+
+cpe1:
+  publicKey: ""
+
+cpe2:
+  publicKey: ""
+
 
 ingress:
   enabled: false

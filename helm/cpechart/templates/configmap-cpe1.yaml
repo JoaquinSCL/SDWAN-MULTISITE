@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cpe1-public-key
+  namespace: {{ .Release.Namespace }}
+data:
+  publicKey: "{{ .Values.cpe1.publicKey }}"
