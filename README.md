@@ -60,8 +60,15 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     helm install server cpechartS/ --values cpechartS/values.yaml
     helm install client cpechartC/ --values cpechartC/values.yaml
     helm install test cpechartP/ --values cpechartP/values.yaml
+
+    helm install server cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet1\,extnet2"
+    helm install client cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet1"
+    helm install test cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet2"
+
+
     
     #para cerrar
+    helm uninstall configmap
     helm uninstall server
     helm uninstall client
     helm uninstall test
