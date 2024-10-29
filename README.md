@@ -82,7 +82,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 - Para conectar los pods con la red privada virtual se debe acceder a la shell de los contenedores con:
 
-	`kubectl exec <nombrepod> -- /bin/bash`
+	`kubectl exec -it <nombrepod> -- /bin/bash`
 
 	siendo <nombrepod> el nombre de los pods obtenido con el comando "kubectl get all"
 
