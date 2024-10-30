@@ -32,7 +32,14 @@ spec:
               add: ["NET_ADMIN"]
             privileged: true
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          command: ["sh", "-c", "tail -f /dev/null"]
+          command: ["sh", "-c", "touch /tmp/alive; tail -f /dev/null"]
+          livenessProbe:
+            exec:
+              command: 
+              - cat 
+              - /tmp/alive 
+            initialDelaySeconds: 5
+            periodSeconds: 10
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

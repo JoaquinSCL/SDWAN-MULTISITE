@@ -1,7 +1,7 @@
 #!/bin/bash
 export OSMNS  # needs to be defined in calling shell
 export SIID="$NSID2" # $NSID2 needs to be defined in calling shell
-export SNAME="$BASH_SOURCE"
+
 
 export NETNUM=2  # used to select external networks (set to 2 for sdedge2)
 
@@ -20,4 +20,8 @@ export VCPEPUBIP="10.100.2.1"
 # VCPEGW: the default gateway for the vcpe
 export VCPEGW="10.100.2.254"
 
-./osm_sdedge_start.sh
+# OSM SECTION
+#./osm_sdedge_start.sh
+
+# HELM SECTION
+./k8s_sdedge_start.sh

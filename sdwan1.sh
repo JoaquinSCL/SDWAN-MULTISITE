@@ -14,4 +14,8 @@ export WG0IPREMOTESITE="10.100.169.2"
 
 export VCPE_ID="cpe1"
 
-./osm_sdwan_start.sh
+# OSM SECTION
+#./osm_sdwan_start.sh
+
+# HELM SECTION
+./k8s_sdwan_start.sh

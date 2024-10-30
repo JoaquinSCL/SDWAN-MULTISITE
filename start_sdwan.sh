@@ -25,24 +25,22 @@ set -u # to verify variables are defined
 : $WG0IPREMOTESITE
 : $REMOTENETNUM
 
-if [[ ! $VCPE =~ "sdedge-ns-repo-cpechart"  ]]; then
+if [[ ! $VCPE =~ "-cpechart"  ]]; then
     echo ""       
     echo "ERROR: incorrect <cpe_deployment_id>: $VCPE"
     exit 1
 fi
 
-if [[ ! $VWAN =~ "sdedge-ns-repo-wanchart"  ]]; then
-    echo ""       
-    echo "ERROR: incorrect <wan_deployment_id>: $VWAN"
-    exit 1
+if [[ ! $VWAN =~ "-wanchart"  ]]; then
+   echo ""       
+   echo "ERROR: incorrect <wan_deployment_id>: $VWAN"
+   exit 1
 fi
 
 if [ "$VCPE_ID" == "cpe1" ]; then
-    VCPE="sdedge-ns-repo-cpechart-1"
     CONFIGMAP_LOCAL="cpe1-public-key"
     CONFIGMAP_PEER="cpe2-public-key"
 elif [ "$VCPE_ID" == "cpe2" ]; then
-    VCPE="sdedge-ns-repo-cpechart-2"
     CONFIGMAP_LOCAL="cpe2-public-key"
     CONFIGMAP_PEER="cpe1-public-key"
 else
@@ -72,8 +70,8 @@ echo "PORTWAN = $PORTWAN"
 ## 2. En VNF:cpe agregar instancia wireguard, bridge y sus vxlans
 echo "## 2. En VNF:cpe agregar un bridge y configurar IPs y rutas"
 
-$CPE_EXEC wg genkey | tee wgkeyprivs | wg pubkey > /etc/wireguard/publickey
-public_key=$($CPE_EXEC cat /etc/wireguard/publickey)
+$CPE_EXEC sh -c "wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs"
+public_key=$($CPE_EXEC cat wgkeypubs)
 $KUBECTL patch configmap $CONFIGMAP_LOCAL -n $OSMNS -p "{\"data\":{\"publicKey\":\"$public_key\"}}"
 # Esperar hasta que la clave pública del peer esté disponible
 echo "Esperando a que la clave pública del peer ($CONFIGMAP_PEER) esté disponible..."

@@ -23,16 +23,16 @@ set -u # to verify variables are defined
 : $VCPEPUBIP
 : $VCPEGW
 
-if [[ ! $VACC =~ "sdedge-ns-repo-accesschart"  ]]; then
-    echo ""       
-    echo "ERROR: incorrect <access_deployment_id>: $VACC"
-    exit 1
+if [[ ! $VACC =~ "-accesschart"  ]]; then
+   echo ""       
+   echo "ERROR: incorrect <access_deployment_id>: $VACC"
+   exit 1
 fi
 
-if [[ ! $VCPE =~ "sdedge-ns-repo-cpechart"  ]]; then
-    echo ""       
-    echo "ERROR: incorrect <cpe_deployment_id>: $VCPE"
-    exit 1
+if [[ ! $VCPE =~ "-cpechart"  ]]; then
+   echo ""       
+   echo "ERROR: incorrect <cpe_deployment_id>: $VCPE"
+   exit 1
 fi
 
 ACC_EXEC="$KUBECTL exec -n $OSMNS $VACC --"
