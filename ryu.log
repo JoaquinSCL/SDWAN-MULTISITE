@@ -10,17 +10,16 @@ Created flowmanager
 instantiating app ryu.topology.switches of Switches
 instantiating app ryu.app.ofctl_rest of RestStatsApi
 instantiating app ryu.controller.ofp_handler of OFPHandler
-(141) wsgi starting up on http://0.0.0.0:8080
-(141) accepted ('10.0.1.1', 7920)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.027538
-(141) accepted ('10.0.1.1', 57995)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001299
-(141) accepted ('10.0.1.1', 29165)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001629
-(141) accepted ('10.0.1.1', 2726)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001071
-(141) accepted ('10.0.1.1', 22597)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001493
-(141) accepted ('10.0.1.1', 12220)
-10.0.1.1 - - [29/Oct/2024 23:18:21] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001536
-command terminated with exit code 137
+(148) wsgi starting up on http://0.0.0.0:8080
+(148) accepted ('10.0.1.1', 24416)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.034395
+(148) accepted ('10.0.1.1', 50970)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001067
+(148) accepted ('10.0.1.1', 59839)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001313
+(148) accepted ('10.0.1.1', 59045)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.000969
+(148) accepted ('10.0.1.1', 2860)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.001256
+(148) accepted ('10.0.1.1', 43433)
+10.0.1.1 - - [30/Oct/2024 23:24:13] "POST /stats/flowentry/add HTTP/1.1" 200 115 0.00132cocommand terminated with exit code 137

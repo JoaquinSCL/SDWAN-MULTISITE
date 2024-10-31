@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cpe-public-keys
+description: Helm chart para crear ConfigMaps de las claves públicas de CPEs
+version: 0.1.0
+appVersion: "1.0"

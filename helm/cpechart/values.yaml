@@ -46,17 +46,6 @@ deployment:
   containerPort: 1194
   protocol: UDP
 
-# ConfigMaps for public keys
-configMaps:
-  cpe1PublicKey: cpe1-public-key
-  cpe2PublicKey: cpe2-public-key
-
-cpe1:
-  publicKey: ""
-
-cpe2:
-  publicKey: ""
-
 
 ingress:
   enabled: false

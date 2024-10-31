@@ -11,10 +11,9 @@ set -u # to verify variables are defined
 : $SIID
 : $NETNUM
 : $REMOTESITE
-: $VCPE_ID
 : $WG0IP
 : $WG0IPREMOTESITE
-: $REMOTENETNUM
+: $CONFIGMAP_LOCAL
 
 export KUBECTL="microk8s kubectl"
 

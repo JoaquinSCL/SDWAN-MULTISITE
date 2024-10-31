@@ -26,9 +26,23 @@ do
   helm -n $OSMNS uninstall $vnf$NETNUM 
 done
 
+if [ $NETNUM == "1" ]; then
+  helm -n $OSMNS uninstall cpe-public-keys
+else
+  echo ""
+fi
+
 sleep 15
 
 chart_suffix="chart-0.1.0.tgz"
+configmap_chart_suffix="-0.1.0.tgz"
+
+if [ $NETNUM == "1" ]; then
+  helm -n $OSMNS install cpe-public-keys cpe-public-keys$configmap_chart_suffix
+else
+  echo "ConfigMap de claves públicas ya instalado"
+fi
+
 for vnf in access cpe wan
 do
   helm -n $OSMNS install $vnf$NETNUM $vnf$chart_suffix

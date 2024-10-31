@@ -46,20 +46,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - name: cpe1-public-key-volume
-              mountPath: /etc/wireguard/cpe1-public-key
-              subPath: publicKey
-            - name: cpe2-public-key-volume
-              mountPath: /etc/wireguard/cpe2-public-key
-              subPath: publicKey
-      volumes:
-        - name: cpe1-public-key-volume
-          configMap:
-            name: {{ .Values.configMaps.cpe1PublicKey }}
-        - name: cpe2-public-key-volume
-          configMap:
-            name: {{ .Values.configMaps.cpe2PublicKey }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

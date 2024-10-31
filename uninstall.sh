@@ -1,7 +1,12 @@
 #!/bin/bash
 
-set -u # to verify variables are defined
-: $OSMNS
+export OSMNS=rdsv
+
+cd ~/shared/sdedge-ns/vnx
+
+sudo vnx -f sdedge_nfv.xml --destroy
+
+cd ~/shared/sdedge-ns/
 
 # HELM SECTION
 for NETNUM in {1..2}
@@ -11,3 +16,5 @@ do
     helm -n $OSMNS uninstall $VNF$NETNUM 
   done
 done
+
+helm -n $OSMNS uninstall cpe-public-keys

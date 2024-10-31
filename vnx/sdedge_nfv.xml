@@ -123,11 +123,6 @@ SPAIN
        ifconfig eth1 mtu 1400
        sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
     </exec>
-    <filetree seq="on_boot" root="/tmp/">/home/upm/shared/rdsv-final/vnx/conf_arpwatch/conf.sh</filetree>
-    <exec seq="on_boot" type="verbatim">
-       cat /tmp/conf.sh >> /home/vnx/conf.sh
-       rm /tmp/conf.sh
-    </exec>
     <forwarding type="ip" />
     <route type="ipv4" gw="10.20.0.2">10.20.2.0/24</route>
     <route type="ipv4" gw="192.168.255.254">0.0.0.0/0</route>
@@ -147,11 +142,6 @@ SPAIN
        # Change interfaces MTU
        ifconfig eth1 mtu 1400
        sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
-    </exec>
-    <filetree seq="on_boot" root="/tmp/">/home/upm/shared/rdsv-final/vnx/conf_arpwatch/conf.sh</filetree>
-    <exec seq="on_boot" type="verbatim">
-       cat /tmp/conf.sh >> /home/vnx/conf.sh
-       rm /tmp/conf.sh
     </exec>
     <forwarding type="ip" />
     <route type="ipv4" gw="10.20.0.1">10.20.1.0/24</route>

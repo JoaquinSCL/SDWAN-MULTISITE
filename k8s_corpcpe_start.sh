@@ -26,6 +26,8 @@ do
   helm -n $OSMNS uninstall $vnf$NETNUM 
 done
 
+helm -n $OSMNS uninstall cpe-public-keys
+
 sleep 15
 
 chart_suffix="chart-0.1.0.tgz"
