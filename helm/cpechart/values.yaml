@@ -36,15 +36,8 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
-  type: NodePort
-  port: 1194
-  protocol: TCP
-
 deployment:
   network: extnet1,extnet2
-  containerPort: 1194
-  protocol: UDP
 
 
 ingress:

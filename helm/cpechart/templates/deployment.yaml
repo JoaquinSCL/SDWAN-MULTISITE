@@ -40,9 +40,6 @@ spec:
               - /tmp/alive 
             initialDelaySeconds: 5
             periodSeconds: 10
-          ports:
-          - containerPort: {{ .Values.deployment.containerPort }}
-            protocol: {{ .Values.deployment.protocol }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
