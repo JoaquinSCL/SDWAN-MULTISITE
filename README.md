@@ -57,9 +57,10 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
     `cd helm`
    
     ```yaml
-    helm install server cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet1\,extnet2"
-    helm install client cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet1"
-    helm install test cpechartf/ --values cpechartf/values.yaml --set deployment.network="extnet2"
+	helm install server cpechart/ --values cpechart/values.yaml --set deployment.network="extnet1\,extnet2"
+	helm install client cpechart/ --values cpechart/values.yaml --set deployment.network="extnet1"
+	helm install test cpechart/ --values cpechart/values.yaml --set deployment.network="extnet2"
+
 
 
     
