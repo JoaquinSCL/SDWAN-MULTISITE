@@ -74,7 +74,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 
 - Para comprobar que todo se ha desplegado correctamente:
 
-	`Kubectl get all`
+	`kubectl get all`
 	`kubectl get pods -o wide`
 
 - Para conectar los pods con la red privada virtual se debe acceder a la shell de los contenedores con:
