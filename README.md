@@ -274,3 +274,176 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 	 	- Usar tcpdump en el servidor para ver si pasa por ahí el tráfico:
 	
 	    	`tcpdump -i wg0`
+
+
+
+### **Memoria: Despliegue de un entorno de red basado en Helm con VPNs (OpenVPN y WireGuard)**
+
+Este documento detalla los pasos necesarios para desplegar y configurar un entorno de red basado en Kubernetes y Helm, utilizando tecnologías de VPN como OpenVPN y WireGuard, complementadas con tunelización a nivel 2 (GREtap y VXLAN). 
+
+---
+
+### **1. Despliegue básico del entorno con Helm**
+
+El entorno incluye tres componentes principales:
+- **Cliente**: Conectado a `extnet1`.
+- **Servidor**: Conectado a `extnet1` y `extnet2`.
+- **Pod de prueba (Test)**: Conectado a `extnet2`.
+
+#### **Pasos para el despliegue**
+1. Navegar al directorio que contiene los charts de Helm.
+   ```bash
+   cd helm
+   ```
+
+2. Desplegar los tres componentes utilizando los siguientes comandos:
+   ```bash
+   helm install server cpechart/ --values cpechart/values.yaml --set deployment.network="extnet1\,extnet2"
+   helm install client cpechart/ --values cpechart/values.yaml --set deployment.network="extnet1"
+   helm install test cpechart/ --values cpechart/values.yaml --set deployment.network="extnet2"
+   ```
+
+3. Verificar el estado del despliegue:
+   ```bash
+   kubectl get all
+   kubectl get pods -o wide
+   ```
+
+4. Para acceder a los pods:
+   ```bash
+   kubectl exec -it <nombrepod> -- /bin/bash
+   ```
+
+5. Configurar las IPs de las interfaces de red externas (`extnet1` y `extnet2`):
+   ```bash
+   # En el servidor
+   ifconfig net1 10.100.1.1/24
+   # En el cliente
+   ifconfig net1 10.100.1.2/24
+   # En el pod de prueba
+   ifconfig net1 10.100.2.2/24
+   ```
+
+#### **Para eliminar los recursos**
+   ```bash
+   helm uninstall server
+   helm uninstall client
+   helm uninstall test
+   ```
+
+---
+
+### **2. Configuración de OpenVPN**
+
+La configuración se basa en los archivos `server.conf` y `client.conf` que definen la operación del servidor y el cliente respectivamente.
+
+#### **Servidor OpenVPN**
+1. Iniciar el servicio:
+   ```bash
+   openvpn server.conf &
+   ```
+
+#### **Cliente OpenVPN**
+1. Iniciar el cliente:
+   ```bash
+   openvpn client.conf &
+   ```
+
+#### **Prueba de conectividad**
+1. Desde el cliente, probar conectividad con el pod de prueba:
+   ```bash
+   ping 10.100.2.2
+   ```
+2. Verificar tráfico en el servidor con `tcpdump`:
+   ```bash
+   tcpdump -i tap0
+   ```
+
+---
+
+### **3. Configuración de WireGuard con soporte para nivel 2**
+
+#### **Túnel WireGuard**
+##### Servidor:
+1. Crear claves privadas y públicas:
+   ```bash
+   wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+   ```
+2. Configurar la interfaz WireGuard:
+   ```bash
+   ip link add wg0 type wireguard
+   wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+   ip address add 10.100.169.1/24 dev wg0
+   ip link set dev wg0 mtu 1500
+   ip link set wg0 up
+   wg set wg0 peer <clavePublicaCliente> allowed-ips 0.0.0.0/0 endpoint 10.100.1.2:1194
+   ```
+
+##### Cliente:
+1. Crear claves privadas y públicas:
+   ```bash
+   wg genkey | tee wgkeyprivs | wg pubkey > wgkeypubs
+   ```
+2. Configurar la interfaz WireGuard:
+   ```bash
+   ip link add wg0 type wireguard
+   wg set wg0 listen-port 1194 private-key ./wgkeyprivs
+   ip address add 10.100.169.2/24 dev wg0
+   ip link set dev wg0 mtu 1500
+   ip link set wg0 up
+   wg set wg0 peer <clavePublicaServidor> allowed-ips 0.0.0.0/0 endpoint 10.100.1.1:1194
+   ```
+
+---
+
+#### **Extensión a nivel 2**
+##### Opción 1: GREtap
+- **Servidor**:
+  ```bash
+  ip link add gretun type gretap local 10.100.169.1 remote 10.100.169.2 ignore-df nopmtudisc
+  ip link set gretun up
+  ip link add name br0 type bridge
+  ip link set dev br0 up
+  ip link set dev net2 master br0
+  ip link set gretun master br0
+  ip addr add 10.100.2.1/24 dev br0
+  ```
+- **Cliente**:
+  ```bash
+  ip link add gretun type gretap local 10.100.169.2 remote 10.100.169.1 ignore-df nopmtudisc
+  ip link set gretun up
+  ip addr add 10.100.2.8/24 dev gretun
+  ```
+
+##### Opción 2: VXLAN
+- **Servidor**:
+  ```bash
+  ip link add vxlan0 type vxlan id 1000 local 10.100.169.1 remote 10.100.169.2 dev wg0 dstport 4789
+  ip link set vxlan0 up
+  ip link add name br0 type bridge
+  ip link set dev br0 up
+  ip link set dev net2 master br0
+  ip link set vxlan0 master br0
+  ip addr add 10.100.2.1/24 dev br0
+  ```
+- **Cliente**:
+  ```bash
+  ip link add vxlan0 type vxlan id 1000 local 10.100.169.2 remote 10.100.169.1 dev wg0 dstport 4789
+  ip link set vxlan0 up
+  ip addr add 10.100.2.8/24 dev vxlan0
+  ```
+
+---
+
+### **4. Verificación**
+1. Probar conectividad bidireccional:
+   ```bash
+   ping 10.100.2.1
+   ping 10.100.2.8
+   ```
+2. Monitorear tráfico:
+   ```bash
+   tcpdump -i vxlan0
+   ```
+
+Esta memoria resume los pasos clave para desplegar y configurar el entorno, asegurando conectividad y soporte para túneles de nivel 2.
