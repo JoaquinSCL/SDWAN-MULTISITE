@@ -16,7 +16,7 @@ En este caso se van a desplegar tres pods sobre Kubernetes usando Helm y conecta
 - Conectarlo al switch con “microk8s kubectl get -network-attachment-definitions extnet1” y con extnet2
     
     ```
-    	# Configure Multus extnet1
+    # Configure Multus extnet1
     microk8s kubectl get network-attachment-definitions extnet1 || \
     cat <<EOF | microk8s kubectl create -f -
     apiVersion: "k8s.cni.cncf.io/v1"
