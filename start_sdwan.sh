@@ -62,10 +62,7 @@ public_key=$($CPE_EXEC cat wgkeypubs)
 $KUBECTL patch configmap $CONFIGMAP_LOCAL -n $OSMNS -p "{\"data\":{\"publicKey\":\"$public_key\"}}"
 
 $CPE_EXEC ip route add $IPWAN/32 via $K8SGW
-$CPE_EXEC ovs-vsctl add-br brwan
-$CPE_EXEC ip link add cpewan type vxlan id 5 remote $IPWAN dstport 8741 dev eth0
-$CPE_EXEC ovs-vsctl add-port brwan cpewan
-$CPE_EXEC ifconfig cpewan up
+
 
 
 ## 3. En VNF:wan arrancar controlador SDN"

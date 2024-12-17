@@ -10,8 +10,8 @@
 # WG0IP: the IP address of the wireguard interface in the cpe
 # WG0IPREMOTESITE: the IP address of the wireguard interface in the remote site
 
-export KUBECTL="microk8s kubectl"
-export OSMNS="rdsv"
+KUBECTL="microk8s kubectl"
+OSMNS="rdsv"
 
 for NETNUM in {1..2}
 do
@@ -22,6 +22,11 @@ do
         WG0IPREMOTESITE="10.100.169.2"
         VCPE="deploy/cpe1-cpechart"
         CPE_EXEC="$KUBECTL exec -n $OSMNS $VCPE --"
+        VWAN="deploy/wan$NETNUM-wanchart"
+        WAN_EXEC="$KUBECTL exec -n $OSMNS $VWAN --"
+        IPWAN=`$WAN_EXEC hostname -I | awk '{print $1}'`
+        echo $IPWAN
+
     elif [ "$NETNUM" == "2" ]; then
         CONFIGMAP_PEER="cpe1-public-key"
         REMOTESITE="10.100.1.1"
@@ -29,6 +34,10 @@ do
         WG0IPREMOTESITE="10.100.169.1"
         VCPE="deploy/cpe2-cpechart"
         CPE_EXEC="$KUBECTL exec -n $OSMNS $VCPE --"
+        VWAN="deploy/wan$NETNUM-wanchart"
+        WAN_EXEC="$KUBECTL exec -n $OSMNS $VWAN --"
+        IPWAN=`$WAN_EXEC hostname -I | awk '{print $1}'`
+        echo $IPWAN
     fi
     # Esperar hasta que la clave pública del peer esté disponible
     echo "Esperando a que la clave pública del peer ($CONFIGMAP_PEER) esté disponible..."
@@ -57,7 +66,12 @@ do
     $CPE_EXEC ip link set wg0 up
     $CPE_EXEC wg set wg0 peer $peer_public_key allowed-ips 0.0.0.0/0 endpoint $REMOTESITE:1194
 
-    $CPE_EXEC ip link add sr1sr2 type vxlan id 12 local $WG0IP remote $WG0IPREMOTESITE dstport 8742 dev wg0
-    $CPE_EXEC ovs-vsctl add-port brwan sr1sr2
+    $CPE_EXEC ovs-vsctl add-br brwan
+    $CPE_EXEC ifconfig brwan 10.100.3.$NETNUM/24
+    $CPE_EXEC ip link add cpewan type vxlan id 5 remote $IPWAN dev eth0 dstport 8741
+    $CPE_EXEC ovs-vsctl add-port brwan cpewan
+    $CPE_EXEC ifconfig cpewan up
+    $CPE_EXEC ip link add sr1sr2 type vxlan id 1000 local $WG0IP remote $WG0IPREMOTESITE dev wg0 dstport 8742
     $CPE_EXEC ifconfig sr1sr2 up
+    $CPE_EXEC ovs-vsctl add-port brwan sr1sr2
 done
