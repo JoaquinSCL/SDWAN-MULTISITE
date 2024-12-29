@@ -67,11 +67,10 @@ do
     $CPE_EXEC wg set wg0 peer $peer_public_key allowed-ips 0.0.0.0/0 endpoint $REMOTESITE:1194
 
     $CPE_EXEC ovs-vsctl add-br brwan
-    $CPE_EXEC ifconfig brwan 10.100.3.$NETNUM/24
     $CPE_EXEC ip link add cpewan type vxlan id 5 remote $IPWAN dev eth0 dstport 8741
     $CPE_EXEC ovs-vsctl add-port brwan cpewan
     $CPE_EXEC ifconfig cpewan up
-    $CPE_EXEC ip link add sr1sr2 type vxlan id 1000 local $WG0IP remote $WG0IPREMOTESITE dev wg0 dstport 8742
+    $CPE_EXEC ip link add sr1sr2 type vxlan id 12 local $WG0IP remote $WG0IPREMOTESITE dev wg0 dstport 4789
     $CPE_EXEC ifconfig sr1sr2 up
     $CPE_EXEC ovs-vsctl add-port brwan sr1sr2
 done
