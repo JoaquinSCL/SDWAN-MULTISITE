@@ -1,9 +1,12 @@
 #!/bin/bash
-echo "alias kubectl='microk8s kubectl'" >> ~/.bashrc
 
-OSMNS='rdsv'
-microk8s kubectl create namespace $OSMNS 
-microk8s kubectl get namespace $OSMNS 
+SDWNS=rdsv
+
+echo "alias kubectl='microk8s kubectl'" >> ~/.bashrc
+echo "export SDWNS=$SDWNS" >> ~/.bashrc
+
+microk8s kubectl create namespace $SDWNS 
+microk8s kubectl get namespace $SDWNS 
 
 # Enable access to services running on the host machine via fixed IP address
 microk8s enable host-access
@@ -26,8 +29,8 @@ sudo ovs-vsctl add-br ExtNet2
 sudo ovs-vsctl add-br MplsWan
 
 # Configure Multus accessnet1
-microk8s kubectl get -n $OSMNS network-attachment-definitions accessnet1 || \
-cat <<EOF | microk8s kubectl create -n $OSMNS -f -
+microk8s kubectl get -n $SDWNS network-attachment-definitions accessnet1 || \
+cat <<EOF | microk8s kubectl create -n $SDWNS -f -
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -43,8 +46,8 @@ spec:
 EOF
 
 # Configure Multus accessnet2
-microk8s kubectl get -n $OSMNS network-attachment-definitions accessnet2 || \
-cat <<EOF | microk8s kubectl create -n $OSMNS -f -
+microk8s kubectl get -n $SDWNS network-attachment-definitions accessnet2 || \
+cat <<EOF | microk8s kubectl create -n $SDWNS -f -
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -60,8 +63,8 @@ spec:
 EOF
 
 # Configure Multus extnet1
-microk8s kubectl get -n $OSMNS network-attachment-definitions extnet1 || \
-cat <<EOF | microk8s kubectl create -n $OSMNS -f -
+microk8s kubectl get -n $SDWNS network-attachment-definitions extnet1 || \
+cat <<EOF | microk8s kubectl create -n $SDWNS -f -
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -78,8 +81,8 @@ EOF
 
 
 # Configure Multus extnet2
-microk8s kubectl get -n $OSMNS network-attachment-definitions extnet2 || \
-cat <<EOF | microk8s kubectl create -n $OSMNS -f -
+microk8s kubectl get -n $SDWNS network-attachment-definitions extnet2 || \
+cat <<EOF | microk8s kubectl create -n $SDWNS -f -
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -96,8 +99,8 @@ EOF
 
 
 # Configure Multus mplswan
-microk8s kubectl get -n $OSMNS network-attachment-definitions mplswan || \
-cat <<EOF | microk8s kubectl create -n $OSMNS -f -
+microk8s kubectl get -n $SDWNS network-attachment-definitions mplswan || \
+cat <<EOF | microk8s kubectl create -n $SDWNS -f -
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -112,5 +115,5 @@ spec:
  }'
 EOF
 
-echo "-- kubectl get -n $OSMNS network-attachment-definitions"
-microk8s kubectl get -n $OSMNS network-attachment-definitions
+echo "-- kubectl get -n $SDWNS network-attachment-definitions"
+microk8s kubectl get -n $SDWNS network-attachment-definitions

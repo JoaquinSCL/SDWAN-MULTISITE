@@ -1,20 +1,15 @@
 #!/bin/bash
 
-export OSMNS=rdsv
-
-cd ~/shared/sdedge-ns/vnx
-
-sudo vnx -f sdedge_nfv.xml --destroy
-
-cd ~/shared/sdedge-ns/
+set -u # to verify variables are defined
+: $SDWNS
 
 # HELM SECTION
 for NETNUM in {1..2}
 do
   for VNF in access cpe wan
   do
-    helm -n $OSMNS uninstall $VNF$NETNUM 
+    helm -n $SDWNS uninstall $VNF$NETNUM 
   done
 done
 
-helm -n $OSMNS uninstall cpe-public-keys
+microk8s kubectl delete deployments --all

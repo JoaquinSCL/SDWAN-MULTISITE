@@ -38,4 +38,4 @@ ovs-vsctl add-port brwan axswan -- set interface axswan type=vxlan options:remot
 echo "Configure uplink bandwidth limit for VXLAN (UDP) traffic to cpe"
 tc qdisc add dev $ACTUAL_PORT root  handle 1: htb default 1
 tc class add dev $ACTUAL_PORT parent 1: classid 1:10 htb rate 20Mbit ceil 20Mbit
-tc filter add dev $ACTUAL_PORT protocol ip u32 match ip protocol 0x11 0xff match ip dport 4789 0xffff flowid 1:10
+tc filter add dev $ACTUAL_PORT protocol ip u32 match ip protocol 0x11 0xff match ip dport 4789 0xffff flowid 1:10 

@@ -2,7 +2,7 @@
 
 # Requires the following variables
 # KUBECTL: kubectl command
-# OSMNS: OSM namespace in the cluster vim
+# SDWNS: cluster namespace in the cluster vim
 # NETNUM: used to select external networks
 # VACC: "pod_id" or "deploy/deployment_id" of the access vnf
 # VCPE: "pod_id" or "deploy/deployment_id" of the cpd vnf
@@ -14,7 +14,7 @@
 
 set -u # to verify variables are defined
 : $KUBECTL
-: $OSMNS
+: $SDWNS
 : $NETNUM
 : $VACC
 : $VCPE
@@ -45,9 +45,9 @@ fi
 
 
 
-ACC_EXEC="$KUBECTL exec -n $OSMNS $VACC --"
-CPE_EXEC="$KUBECTL exec -n $OSMNS $VCPE --"
-WAN_EXEC="$KUBECTL exec -n $OSMNS $VWAN --"
+ACC_EXEC="$KUBECTL exec -n $SDWNS $VACC --"
+CPE_EXEC="$KUBECTL exec -n $SDWNS $VCPE --"
+WAN_EXEC="$KUBECTL exec -n $SDWNS $VWAN --"
 
 # IP privada por defecto para el vCPE
 VCPEPRIVIP="192.168.255.254"

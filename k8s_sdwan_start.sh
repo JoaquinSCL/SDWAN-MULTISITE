@@ -1,19 +1,20 @@
 #!/bin/bash
   
 # Requires the following variables
-# OSMNS: OSM namespace in the cluster vim
+# SDWNS: cluster namespace in the cluster vim
 # SIID: id of the service instance
 # NETNUM: used to select external networks
 # REMOTESITE: the public IP of the remote site vCPE
 
 set -u # to verify variables are defined
-: $OSMNS
+: $SDWNS
 : $SIID
 : $NETNUM
 : $REMOTESITE
-: $WG0IP
-: $WG0IPREMOTESITE
-: $CONFIGMAP_LOCAL
+#: $WG0IP
+#: $WG0IPREMOTESITE
+#: $CONFIGMAP_LOCAL
+#: $DSTP
 
 export KUBECTL="microk8s kubectl"
 

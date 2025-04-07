@@ -1,18 +1,12 @@
 #!/bin/bash
 
-export OSMNS=rdsv
+bin/prepare-k8slab
 
-#bin/sdw-knf-consoles open $NSID1
+source ~/.bashrc
 
-#bin/sdw-knf-consoles open $NSID2
+sudo vnx -f vnx/sdedge_nfv.xml -P
 
-cd ~/shared/sdedge-ns/vnx
-
-sudo vnx -f sdedge_nfv.xml --destroy
-
-sudo vnx -f sdedge_nfv.xml -t
-
-cd ~/shared/sdedge-ns/
+sudo vnx -f vnx/sdedge_nfv.xml -t
 
 ./sdedge1.sh
 
@@ -22,6 +16,6 @@ cd ~/shared/sdedge-ns/
 
 ./sdwan2.sh
 
-./start_wg.sh
+#./start_wg.sh
 
 echo "Terminado"

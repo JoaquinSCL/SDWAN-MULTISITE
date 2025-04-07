@@ -47,6 +47,8 @@ SPAIN
   <net name="AccessNet2" mode="openvswitch" managed="no"/>
 
   <net name="Internet" mode="openvswitch"/>
+  <net name="lan01" mode="veth" type="p2p"/>
+  <net name="lan0" mode="virtual_bridge" />
 
   <net name="ExtNet1" mode="openvswitch" managed="no"/>
   <net name="ExtNet2" mode="openvswitch" managed="no"/>
@@ -105,6 +107,32 @@ SPAIN
        sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
     </exec>
     <route type="ipv4" gw="10.20.2.1">default</route>
+    </vm>   
+
+    <vm name="h0" type="lxc" exec_mode="lxc-attach" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="lan0">
+        <ipv4>10.20.100.2/24</ipv4>
+    </if>
+    <exec seq="on_boot" type="verbatim">
+       # Change interfaces MTU
+       ifconfig eth1 mtu 1400
+       sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
+    </exec>
+    <route type="ipv4" gw="10.20.100.1">default</route>
+  </vm>   
+
+  <vm name="t0" type="lxc" exec_mode="lxc-attach" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="lan0">
+        <ipv4>10.20.100.200/24</ipv4>
+    </if>
+    <exec seq="on_boot" type="verbatim">
+       # Change interfaces MTU
+       ifconfig eth1 mtu 1400
+       sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
+    </exec>
+    <route type="ipv4" gw="10.20.100.1">default</route>
   </vm>   
 
   <vm name="r1" type="lxc" exec_mode="lxc-attach" arch="x86_64">
@@ -125,8 +153,10 @@ SPAIN
     </exec>
     <forwarding type="ip" />
     <route type="ipv4" gw="10.20.0.2">10.20.2.0/24</route>
+    <route type="ipv4" gw="10.20.0.100">10.20.100.0/24</route>
     <route type="ipv4" gw="192.168.255.254">0.0.0.0/0</route>
   </vm>   
+
   <vm name="r2" type="lxc" exec_mode="lxc-attach" arch="x86_64">
     <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
     <if id="1" net="lan2">
@@ -145,6 +175,7 @@ SPAIN
     </exec>
     <forwarding type="ip" />
     <route type="ipv4" gw="10.20.0.1">10.20.1.0/24</route>
+    <route type="ipv4" gw="10.20.0.100">10.20.100.0/24</route>
     <route type="ipv4" gw="192.168.255.254">0.0.0.0/0</route>
   </vm>   
 
@@ -262,5 +293,47 @@ SPAIN
     <route type="ipv4" gw="10.100.3.1">10.100.1.0/24</route>
     <route type="ipv4" gw="10.100.3.2">10.100.2.0/24</route>
     <route type="ipv4" gw="10.100.3.1">0.0.0.0/0</route>
+  </vm>
+  <vm name="r0" type="lxc" exec_mode="lxc-attach" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="lan01">
+      <ipv4>10.20.0.100/24</ipv4>
+    </if>
+    <if id="2" net="lan0">
+        <ipv4>10.20.100.1/24</ipv4>
+    </if>
+    <exec seq="on_boot" type="verbatim">
+      # Change interfaces MTU
+      ifconfig eth1 mtu 1400
+      sed -i -e '/iface eth1 inet static/a \   mtu 1400' /etc/network/interfaces
+    </exec>
+    <forwarding type="ip" />
+    <route type="ipv4" gw="10.20.0.1">10.20.1.0/24</route>
+    <route type="ipv4" gw="10.20.0.2">10.20.2.0/24</route>
+  </vm> 
+
+  <vm name="bcg0" type="lxc" exec_mode="lxc-attach" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="lan01">
+    </if>
+    <if id="2" net="Internet">
+      <ipv4>10.100.3.100/24</ipv4>
+    </if>
+    <route type="ipv4" gw="10.100.3.1">10.100.1.0/24</route>
+    <route type="ipv4" gw="10.100.3.1">10.100.2.0/24</route>
+    <exec seq="on_boot" type="verbatim">
+      service openvswitch-switch start
+      sleep 5
+      ifconfig eth1 up
+      ifconfig eth2 up
+      ovs-vsctl add-br brwan
+      ip link add sr1sr21 type vxlan id 11 remote 10.100.1.1 dstport 4789 dev eth2
+      ip link add sr1sr22 type vxlan id 12 remote 10.100.2.1 dstport 4789 dev eth2
+      ovs-vsctl add-port brwan eth1
+      ovs-vsctl add-port brwan sr1sr21
+      ovs-vsctl add-port brwan sr1sr22
+      ifconfig sr1sr21 up
+      ifconfig sr1sr22 up
+    </exec>
   </vm>
 </vnx>

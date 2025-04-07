@@ -13,10 +13,10 @@
 #    under the License.
 nsd:
   nsd:
-  - id: sdedge
-    name: sdedge
-    designer: Joaquin Sanchez
-    description: SD-WAN Service
+  - id: corpcpe
+    name: corpcpe
+    designer: educaredes
+    description: CPE Network Service NS consisting of 2 KNFs
     version: '1.0'
     df:
     - id: default-df
@@ -35,20 +35,6 @@ nsd:
                 constituent-cpd-id: mgmt-ext
             virtual-link-profile-id: mgmtnet
         vnfd-id: cpeknf
-      - id: wan
-        virtual-link-connectivity:
-          - constituent-cpd-id:
-              - constituent-base-element-id: wan
-                constituent-cpd-id: mgmt-ext
-            virtual-link-profile-id: mgmtnet
-        vnfd-id: wanknf
-#       - id: ctrl
-#         virtual-link-connectivity:
-#           - constituent-cpd-id:
-#               - constituent-base-element-id: ctrl
-#                 constituent-cpd-id: mgmt-ext
-#             virtual-link-profile-id: mgmtnet
-#         vnfd-id: ctrlknf
     version: '1.0'    
     virtual-link-desc:
       - id: mgmtnet
@@ -56,6 +42,3 @@ nsd:
     vnfd-id:
       - accessknf
       - cpeknf
-      - wanknf
-    #  - ctrlknf
-     
