@@ -17,6 +17,10 @@ sudo vnx -f vnx/sdedge_nfv.xml -t
 ./sdedge1.sh
 
 ./sdwan1.sh
+
+./sdedge2.sh
+
+./sdwan2.sh
 ```
 
 Then, enter r1 and r2 consoles and ping r0
