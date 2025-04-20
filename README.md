@@ -105,8 +105,9 @@ ip link add name geneve1 type geneve id 1000 remote 10.100.2.1
 ip link set geneve1 up
 ip addr add 10.100.3.2/24 dev geneve1
 ```
-#### **Extensión a nivel 2 con GENEVE (con bridges ovs)**
 
+#### **Extensión a nivel 2 con GENEVE (con bridges ovs)**
+```bash
 #Client
 service openvswitch-switch start
 sleep 5
@@ -130,7 +131,7 @@ ovs-vsctl add-br brwanT
 ovs-vsctl add-port brwanT geneve1 -- set interface geneve1 type=geneve options:remote_ip=10.100.2.1
 ip addr add 10.100.3.2/24 dev brwanT
 ip link set brwanT up
-
+```
 ---
 
 ### **Verificación**
