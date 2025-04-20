@@ -13,3 +13,5 @@ do
 done
 
 microk8s kubectl delete deployments --all
+
+sudo vnx -f vnx/sdedge_nfv.xml -P

@@ -327,13 +327,17 @@ SPAIN
       ifconfig eth1 up
       ifconfig eth2 up
       ovs-vsctl add-br brwan
-      ip link add sr1sr21 type vxlan id 11 remote 10.100.1.1 dstport 4789 dev eth2
-      ip link add sr1sr22 type vxlan id 12 remote 10.100.2.1 dstport 4789 dev eth2
+#      ip link add sr1sr21 type vxlan id 11 remote 10.100.1.1 dstport 4789 dev eth2
+#      ip link add sr1sr21 type geneve id 11 remote 10.100.1.1
+#      ip link add sr1sr22 type vxlan id 12 remote 10.100.2.1 dstport 4789 dev eth2
+#      ip link add sr1sr22 type geneve id 12 remote 10.100.2.1
+      ovs-vsctl add-port brwan geneve1 -- set interface geneve1 type=geneve options:remote_ip=10.100.1.1
+      ovs-vsctl add-port brwan geneve2 -- set interface geneve2 type=geneve options:remote_ip=10.100.2.1
       ovs-vsctl add-port brwan eth1
-      ovs-vsctl add-port brwan sr1sr21
-      ovs-vsctl add-port brwan sr1sr22
-      ifconfig sr1sr21 up
-      ifconfig sr1sr22 up
+#      ovs-vsctl add-port brwan sr1sr21
+#      ovs-vsctl add-port brwan sr1sr22
+#      ifconfig sr1sr21 up
+#      ifconfig sr1sr22 up
     </exec>
   </vm>
 </vnx>

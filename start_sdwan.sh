@@ -71,10 +71,12 @@ $CPE_EXEC ovs-vsctl add-br brwan
 $CPE_EXEC ip link add cpewan type vxlan id 5 remote $IPWAN dstport 8741 dev eth0
 $CPE_EXEC ovs-vsctl add-port brwan cpewan
 $CPE_EXEC ifconfig cpewan up
-#$CPE_EXEC ip link add sr1sr2 type vxlan id 12 local $WG0IP remote $WG0IPREMOTESITE dev wg0 dstport 4789
-$CPE_EXEC ip link add sr1sr2$NETNUM type vxlan id 1$NETNUM remote $REMOTESITE dstport 4789 dev net$NETNUM
-$CPE_EXEC ovs-vsctl add-port brwan sr1sr2$NETNUM
-$CPE_EXEC ifconfig sr1sr2$NETNUM up
+##Wireguard+VxLAN $CPE_EXEC ip link add sr1sr2 type vxlan id 12 local $WG0IP remote $WG0IPREMOTESITE dev wg0 dstport 4789
+#VxLAN $CPE_EXEC ip link add sr1sr2$NETNUM type vxlan id 1$NETNUM remote $REMOTESITE dstport 4789 dev net$NETNUM
+#Geneve con ip link add $CPE_EXEC ip link add sr1sr2$NETNUM type geneve id 1$NETNUM remote $REMOTESITE
+$CPE_EXEC ovs-vsctl add-port brwan geneve$NETNUM -- set interface geneve$NETNUM type=geneve options:remote_ip=$REMOTESITE
+#$CPE_EXEC ovs-vsctl add-port brwan sr1sr2$NETNUM
+#$CPE_EXEC ifconfig sr1sr2$NETNUM up
 
 ## 3. En VNF:wan arrancar controlador SDN"
 echo "## 3. En VNF:wan arrancar controlador SDN"
