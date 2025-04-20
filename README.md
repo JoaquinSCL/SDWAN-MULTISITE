@@ -1,3 +1,4 @@
+## **Deployment**
 
 Repository for SD-WAN lab with k8s.
  
@@ -29,6 +30,8 @@ Then, enter r1 and r2 consoles and ping r0
 # from r1
 ping 10.20.0.100
 ```
+
+## **Basic Scenario**
 
 ### **1. Despliegue básico del entorno con Helm**
 
@@ -80,7 +83,7 @@ El entorno incluye tres componentes principales:
 
 ---
 
-#### **Extensión a nivel 2 con GENEVE**
+#### **Extensión a nivel 2 con GENEVE (con comando ip link add)**
 ```bash
 #Client
 ip link add name geneve0 type geneve id 1000 remote 10.100.1.1
@@ -102,6 +105,31 @@ ip link add name geneve1 type geneve id 1000 remote 10.100.2.1
 ip link set geneve1 up
 ip addr add 10.100.3.2/24 dev geneve1
 ```
+#### **Extensión a nivel 2 con GENEVE (con bridges ovs)**
+
+#Client
+service openvswitch-switch start
+sleep 5
+ovs-vsctl add-br brwanC
+ovs-vsctl add-port brwanC geneve0 -- set interface geneve0 type=geneve options:remote_ip=10.100.1.1
+ip addr add 10.100.3.8/24 dev brwanC
+ip link set brwanC up
+#Server
+service openvswitch-switch start
+sleep 5
+ifconfig net2 10.100.2.1/24
+ovs-vsctl add-br brwan
+ovs-vsctl add-port brwan geneve0 -- set interface geneve0 type=geneve options:remote_ip=10.100.1.2
+ovs-vsctl add-port brwan geneve1 -- set interface geneve1 type=geneve options:remote_ip=10.100.2.2
+ip addr add 10.100.3.1/24 dev brwan
+ip link set brwan up
+#Test
+service openvswitch-switch start
+sleep 5
+ovs-vsctl add-br brwanT
+ovs-vsctl add-port brwanT geneve1 -- set interface geneve1 type=geneve options:remote_ip=10.100.2.1
+ip addr add 10.100.3.2/24 dev brwanT
+ip link set brwanT up
 
 ---
 
