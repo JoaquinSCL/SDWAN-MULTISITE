@@ -104,7 +104,6 @@ sudo tc filter add dev geneve0 parent ffff: prio 10 \
     action mirred egress redirect dev net3
 sudo tc filter add dev geneve0 parent ffff: prio 10 \
     flower geneve_opts 0FF01:80:22222222 \
-    action tunnel_key unset \
     action mirred egress redirect dev geneve1
 sudo tc filter add dev geneve0 parent ffff: prio 10 \
     flower geneve_opts 0FF01:80:44444444 \
@@ -118,7 +117,6 @@ sudo tc filter add dev geneve0 parent ffff: prio 11 \
 sudo tc filter add dev geneve0 parent ffff: prio 11 \
     protocol arp \
     flower arp_tip 10.100.3.4 \
-    action tunnel_key unset \
     action mirred egress redirect dev geneve1
 sudo tc filter add dev geneve0 parent ffff: prio 11 \
     protocol arp \
@@ -129,12 +127,10 @@ sudo tc filter add dev geneve0 parent ffff: prio 11 \
 sudo tc qdisc add dev geneve1 ingress
 sudo tc filter add dev geneve1 parent ffff: prio 10 \
     flower geneve_opts 0FF01:80:33333333 \
-    action tunnel_key unset \
     action mirred egress redirect dev geneve0         
 sudo tc filter add dev geneve1 parent ffff: prio 11 \
     protocol arp \
     matchall \
-    action tunnel_key unset \
     action mirred egress redirect dev geneve0
 
 
